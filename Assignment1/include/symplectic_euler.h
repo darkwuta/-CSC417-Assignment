@@ -11,4 +11,8 @@
 template<typename FORCE> 
 inline void symplectic_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, double mass,  FORCE &force) {
 
+    //force(mass,q,qdot);
+    Eigen::VectorXd _qdot = qdot;
+    qdot = _qdot-dt*100.0*q;
+    q += qdot * dt;
 }

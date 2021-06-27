@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.7...3.13)
-
+cmake_minimum_required(VERSION 3.2)
+set(CMAKE_CXX_FLAGS "-std=c++17")
 project(a1-mass-spring-1d)
 
 #Important CMAKE stuff

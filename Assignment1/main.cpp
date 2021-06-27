@@ -21,7 +21,7 @@ Eigen::VectorXd q_dot;
 double mass = 1.0;
 double stiffness = 100.0; 
 double dt = 1e-2; 
-int integrator_type = 0;
+int integrator_type = 2;
 
 bool simulate(igl::opengl::glfw::Viewer & viewer) {
     
@@ -67,8 +67,8 @@ int main(int argc, char **argv) {
     Eigen::MatrixXd V_cow, V_spring;
     Eigen::MatrixXi F_cow, F_spring;
 
-    igl::readOBJ("D:/github/CSC417-physics-based-animation-master/CSC417-physics-based-animation-master/Assignment/Assignment1/CSC417-a1-mass-spring-1d/data/spot.obj", V_cow, F_cow);
-    igl::readOBJ("D:/github/CSC417-physics-based-animation-master/CSC417-physics-based-animation-master/Assignment/Assignment1/CSC417-a1-mass-spring-1d/data/spring.obj", V_spring, F_spring);
+    igl::readOBJ("../data/spot.obj", V_cow, F_cow);
+    igl::readOBJ("../data/spring.obj", V_spring, F_spring);
 
     //setup simulation variables
     q.resize(1);

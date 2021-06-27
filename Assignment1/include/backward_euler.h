@@ -13,6 +13,7 @@
 
 template<typename FORCE, typename STIFFNESS> 
 inline void backward_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, double mass,  FORCE &force, STIFFNESS &stiffness) {
-
+    qdot = (qdot - dt*100.0*q)/(1+dt*dt*100.0);
+    q = q + dt *qdot;
 
 }

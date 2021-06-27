@@ -10,6 +10,17 @@
 
 template<typename FORCE> 
 inline void runge_kutta(Eigen::VectorXd &q, Eigen::VectorXd &qdot, double dt, double mass,  FORCE &force) {
+    //force(mass,q,qdot);
+    //kappa1
+    Eigen::VectorXd k1q=q;
+    Eigen::VectorXd k1qdot=qdot;
+
+    Eigen::VectorXd k2qdot=qdot-dt*100.0*q;
+    Eigen::VectorXd k2q=qdot * dt;
+
+
+    qdot =qdot-dt*50.0*(k1q+k2q);
+    q = q+dt*0.5*(k1qdot+k2qdot);
 
     
 }
