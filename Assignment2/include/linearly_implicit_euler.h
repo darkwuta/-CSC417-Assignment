@@ -20,7 +20,7 @@ inline void linearly_implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, d
                             const Eigen::SparseMatrixd &mass,  FORCE &force, STIFFNESS &stiffness, 
                             Eigen::VectorXd &tmp_force, Eigen::SparseMatrixd &tmp_stiffness) {
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_force.rows():" << tmp_force.rows() << std::endl;
-    std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_stiffness.rows():" << tmp_stiffness.rows() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_stiffness.rows():" << tmp_stiffness.rows() << std::endl;
     tmp_force.resize(q.rows());
     //tmp_stiffness = Eigen::SparseMatrixd(q.rows(), q.rows());
     Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;

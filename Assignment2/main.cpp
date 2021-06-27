@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
     std::cout<<"Start A2\n";
 
     //load geometric data 
-    igl::readMESH("D:/github/CSC417-physics-based-animation-master/CSC417-physics-based-animation-master/Assignment/Assignment2/CSC417-a2-mass-spring-3d/data/coarse_bunny.mesh",V,T, F);
+    igl::readMESH("../data/coarse_bunny.mesh",V,T, F);
     igl::boundary_facets(T, F);
     F = F.rowwise().reverse().eval();
     igl::edges(T,E);
