@@ -1,14 +1,15 @@
-# Physics-Based Animation – Mass-Spring Systems on Three Dimensions
+# Physics-Based Animation – Time Integration of Mass-Spring Systems in One Dimension
+[![](https://github.com/dilevin/CSC2549-a1-mass-spring-1d/workflows/Build-CSC2549-Assignment-One/badge.svg)](https://github.com/dilevin/CSC2549-a1-mass-spring-1d/actions)
 
 > **To get started:** Clone this repository and all its [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules) dependencies using:
 > 
->     git clone --recursive https://github.com/dilevin/CSC417-a2-mass-spring-3d.git
+>     git clone --recursive https://github.com/dilevin/CSC2549-a1-mass-spring-1d.git
 
 **Do not fork:** Clicking "Fork" will create a _public_ repository. If you'd like to use GitHub while you work on your assignment, then mirror this repo as a new _private_ repository: https://stackoverflow.com/questions/10065526/github-how-to-make-a-fork-of-public-repository-private
 
 ## Introduction
 
-The second assignment has two purposes is really where we start doing Computer Graphics. The main focus will be on pushing the ideas we explored in 1D (the previous assignment) to larger scale examples (bunnies!) in 3D. 
+Welcome to Physics-Based Animation. This assignment has two purposes, (1) to familiarize you with the development tools used for assignments in the course and (2) to introduce you to some basic physics simulation concepts in one-dimension (1D).  
 
 ### Prerequisite installation
 
@@ -64,7 +65,7 @@ mind you should create your own test data to verify your program as you write
 it. It is not necessarily sufficient that your program _only_ works on the given
 sample data.
 
-## Compilation for Debugging
+## Compilation
 
 This and all following assignments will follow a typical cmake/make build
 routine. Starting in this directory, issue:
@@ -77,20 +78,8 @@ If you are using Mac or Linux, then issue:
 
     make
 
-## Compilation for Testing
-
-Compiling the code in the above manner will yield working, but very slow executables. To run the code at full speed, you should compile it in release mode. Starting in the **build directory**, do the following:
-
-    cmake .. -DCMAKE_BUILD_TYPE=Release
-    
-Followed by:
-
-    make 
-  
-Your code should now run significantly (sometimes as much as ten times) faster. 
-
-If you are using Windows, then running `cmake ..` should have created a Visual Studio solution file
-called `a2-mass-spring-3d.sln` that you can open and build from there. Building the project will generate an .exe file.
+If you are using Windows, make sure to use `x64`. Running `cmake ..` should have created a Visual Studio solution file
+called `a1-mass-spring-1d.sln` that you can open and build from there. Building the project will generate an .exe file. Move the .exe file to the `build` folder so that links to the input mesh aren't broken.
 
 Why don't you try this right now?
 
@@ -98,175 +87,149 @@ Why don't you try this right now?
 
 Once built, you can execute the assignment from inside the `build/` using 
 
-    ./a2-mass-spring-3d
+    ./a1-mass-spring-1d
 
 ## Background
 
-Its happening! We are finally doing some computer graphics ! You can tell because this assignment has a bunny in it (their name is Terry). 
-
-The goal of this assignment is to take what you've learned about 1D mass-spring systems and move it to 3D. While much of what we previously covered on variational mechanics and time integration still applies, you will soon see that implementations in 3D become much more complicated. Crucially, this assignment will tackle three concepts which will be important for the remainder of the course 
-
-1. the potential energy of a 3D, non-zero rest length spring  
-2. the notion of assembly. Assembly is a process which builds global linear algebra operations describing the motion of a whole object (bunny) from smaller operators describing the behaviour of individual pieces (in this case springs). 
-3. The linearly implicit time integrator in 3D -- arguably the most popular time integration scheme in computer graphics.
-
-![Poking and prodding Terry the Bunny](images/a2_results.gif)
+Physics-based animation leverages techniques from classical mechanics, numerical solutions of partial and ordinary equations (and more !!). As this course progresses you will learn how to use such methods to produce compelling animations of a wide variety of real-world phenomena. This assignment will lay common mathematical and technical foundation on which to build some seriously cool stuff. 
 
 **Github does not render the math in this Markdown. Please look at README.html to see the equations in their proper form**
 
-### A Spring and Two Masses in 3D
+<!-- mention where things are implemented inline -->
+### Newton's Second Law of Motion
 
-The [previous assignment](https://github.com/dilevin/CSC2549-a1-mass-spring-1d) had you implement a simple simulation of a coupled mass and spring in one-dimension. In this assignment we are going to level that up to three dimensions. Specifically, the assignment 2 code reads in a a 3D *tetrahedral* mesh (created using [TetWild](https://github.com/Yixin-Hu/TetWild)) and interprets all the edges of this tetrahedral mesh as springs.  The user (you!!) will be able to poke and prod this bunny by clicking on vertices, in order to elicit, springy wobbly motion.   
-  
-In 1D, we used the one-dimensional position of the mass particle as our generalized coordinate. In 3D we will use the obvious extension, which is that the generalized coordinate of each mass particle will be its 3D position. For the simple case of a spring connecting two masses we will define the $6\times 1$ vector
+Isaac Newton famously described the near-earth motion of objects using three laws:  
 
-$$ \mathbf{q} = \begin{bmatrix} x_0\\y_0\\z_0\\x_1\\y_1\\z_1 \end{bmatrix},$$
+1. *every object will remain at rest or in uniform motion in a straight line unless compelled to change its state by the action of an external force*  
+2. *the force acting on an object is equal to the time rate-of-change of the momentum*  
+3. *for every action there is an equal and opposite reaction*  
+   
+The first law simply states an object cannot change its velocity unless a force acts on it. The third law is used to imply conservation of momentum. It is the second law that implies a mathematical model we can use to create moving pictures. That mathematical model can be expressed in 1D by the very famous formula
 
-where subscripts are used to denote the particle each variable is associated with. Analogous with the 1D case, $\dot{\mathbf{q}} = \frac{d\mathbf{q}}{dt}$, where the time derivative is taken component-wise. 
+$$ ma = f $$.
 
-The first **important** difference between the 1D and 3D cases, is the nature of our spring itself. in 1D we assumed the spring has *zero rest-length* -- in other words, it has zero potential energy when the distance between the 1D particle, and the wall to which it is affixed, is zero. This won't work for 3D shapes since it will cause them to collapse to a point (like a bunny in a blackhole). So we need to define a new potential energy, one which encourages the spring to maintain its original length. 
+Here $m$ is the scalar mass of the object (typically measured in kg), $a$ is the acceleration of the object (typically measured in meters per second squared) and $f$ are the forces acting on the object (measured in Newtons, what an ego!).
 
-We are going to define a way to measure the deformation of our spring, relative to its rest, or undeformed, length -- such a measure is called a *strain* measure.
+Because acceleration is the rate-of-change of velocity over time, and velocity is the rate-of-change of position over time, we can rewrite this in all its differential equation glory as
 
-Lets define $l^0$ to be the original length of of our spring. Then we can define a simple strain measure as $l-l^0$. This has all the properties we want in an effective strain measure:
+$$ m\ddot{x} = f $$,
 
-1. It's $0$ when the spring has length $l^0$ (rather than being $0$ when length is $0$)
-2. It's invariant to rigid body transformations (i.e the strain isn't effected by translating or rotating the spring)
+where we use $\ddot{x}$ to mean $\frac{d^2x}{dt^2}$.
 
-Now in keeping with the variational approach to mechanics, we can use this strain to define a potential energy which we can use to construct our equations of motion.
+Before we get busy solving this differential equation numerically, we are going to introduce **one of the the most important concepts on this course** -- the variational perspective on classical mechanics. 
 
-Let's define the potential energy for a single spring to be
+### The Variational Perspective  
 
-$$V = \frac{1}{2}k\left(l-l^0\right)^2,$$
+We can thank [Leibniz](https://en.wikipedia.org/wiki/Gottfried_Wilhelm_Leibniz) for introducing the quantities of kinetic and potential energy. As the course progresses you will see how understanding dynamic motion in terms of these quantities makes it easy to extend Newton's Second Law to a wide variety of applications. Here we will get some intution in 1D by breifly reviewing how it arises from a variational principle.
 
-where $k$ is the mechanical stiffness of the spring, like in 1D.
+It was Hamilton who identified the approriate variational principle for describing mechanics, called [**the Principle of Least Action**](https://en.wikipedia.org/wiki/Principle_of_least_action). The Principle of Least Action asserts that the trajectory of an object over time, is one that minimizes the integral, over time, of the difference between the kinetic and potential energy, or 
 
-Let's express $V$ in terms of $\mathbf{q}$, which stores the current positions of the end-points of the spring. We are going to do this by introducing some useful matrices that will come in handy later when we need to take derivatives of the potential energy. 
+$$ \mathbf{q}\left(t\right) = \arg\min_{\mathbf{q}}\underbrace{\int_{t0}^{t1} T\left(\mathbf{q}, \dot{\mathbf{q}}\right)-V\left(\mathbf{q}, \dot{\mathbf{q}}\right) dt}_{\mbox{Action}} $$,
 
-We can compute the vector $\mathbf{dx}$ which points from one end of the spring to the other as
+In this course we use $T$ to represent the kinetic energy of an object and $V$ to represent its potential energy. The mysterious quantity $\mathbf{q}$ are the "generalized coordinates" of the system and, briefly all I'll say is that they describe the "configuration" of the mechanical system (don't panic, more soon!).
 
-$$ \mathbf{dx} = \underbrace{\begin{pmatrix}-\mathbf{I} && \mathbf{I}\end{pmatrix}}_{B}\mathbf{q},$$
+Note: The quantity $T-V$ is typically referred to as the Lagrangian, named after [Lagrange](https://en.wikipedia.org/wiki/Joseph-Louis_Lagrange).  
 
-so that means the length of the spring can be written as 
+Finding the conditions under which the Principle of Least Action is stationary can be done using the Calculus of Variations (Top 3 in the most useful things to know if you are a graphics researcher!). It turns out that if $\mathbf{q}\left(t\right)$ satisfies the differential equations (the Euler-Lagrange Equations)
 
-$$l=\sqrt{\mathbf{q}^T B^T B \mathbf{q}}$$
+$$ \frac{d}{dt}\left(\frac{\partial L}{\partial \dot{\mathbf{q}}}\right) = -\frac{\partial L}{\partial \mathbf{q}}$$,
 
-Thus $V\left(\mathbf{q}\right) = \frac{1}{2}k\left(\sqrt{\mathbf{q}^T B^T B \mathbf{q}} - l^0\right)^2$ which gives us the potential energy as a function of the generalized coordinates.
+then $\mathbf{q\left(t\right)}$ is a physically valid trajectory. In this way we can see that as long as we can define appropriate generalized coordinates along with kinetic and potential energies we can describe the motion of a physical system. This 
 
-The kinetic energy, $T$ is defined analogously to the 1D case. In 1D, the kinetic energy was  $\frac{1}{2}m\dot{\mathbf{q}}^2$ where $\dot{\mathbf{q}}$ was the scalar, 1D velocity. We can interpret this as the magnitude squared of the 1D velocity and thus, a reasonable 3D substitute would be 
+As physics simulation connoiseurs, this makes our job conceptually easy, we just need to solve this differential equation. Let's look at how we do that for our 1D mass spring system (and thereby get a good grade on this assignment). 
 
-$$T\left(\dot{\mathbf{q}}\right)=\frac{1}{2}m\dot{\mathbf{q}}^T\dot{\mathbf{q}}.$$
+### The 1D Mass-Spring System
 
-Because $T$ is only a function of the generalized velocity and $V$ is just a function of the generalized coordinate, you should be able to convince yourself that the equations of motion for a single, 3D spring are
+You will soon see that the variational machinery above gives us a cookbook method for describing physics-based motion. To do this we are going to need to define three quantities
 
-$$ m\ddot{\mathbf{q}} = \underbrace{-\frac{\partial V\left(\mathbf{q}\right)}{\partial \mathbf{q}}}_{\mbox{Generalized Force}}$$
+1. Our nebulous $\mathbf{q}$'s
+2. The kinetic energy of  mass spring, $T$
+3. The potential energy of mass spring, $V$
 
-Now that we've seen the basics of how a single spring can be simulated, let's see what happens when we consider a whole system consisting of many springs! 
+![A particle attached to a zero rest length spring](images/massspring.gif)
 
-### Mass-Spring Systems  in 3D
+The first task is to choose $\mathbf{q}$ so that all permissable positions (the configurations) of our mass-spring system can be written as $\mathbf{x}\left(t\right) = \mathbf{f}\left(\mathbf{q}\left(t\right)\right)$. Here $\mathbf{x\left(t\right)}$ is just the position of the center of our particle in 1D Euclidean space and so an easy choice for $\mathbf{q} = \mathbf{x}$.
 
-Now let's consider the case where we have $m$ springs and $n$ particles (like in the case of the tetrahedral mesh representing Terry the bunny).
 
-Whereas in the previous section, our generalized coordinate was $2\times 3$ scalar values for two particles, in the general case, it becomes an $n\times 3$ vector
+Having picked some reasonable generalized coordinates we can now define $T$ and $V$. In 1D, the definition of kinetic energy is likely very familiar 
 
-$$\mathbf{q} = \begin{bmatrix} x_0\\y_0\\z_0\\x_1\\y_1\\z_1\\ \vdots \\x_n\\y_n\\z_n\end{bmatrix}.$$
+$$ T = \frac{1}{2}m\dot{\mathbf{x}}^2 $$,
 
-We'll start with the kinetic energy of a mass-spring system because its the same formula as for a single spring ! However, because it will be convenient later on, we will replace the scalar mass $m$ with an $n\times n$ diagonal matrix $M$ (with the diagonal entries set to $m$) which gives us the slightly modified kinetic energy
+where $m$ is the mass of the particle. 
 
-$$T\left(\dot{\mathbf{q}}\right)=\frac{1}{2}\dot{\mathbf{q}}^T M\dot{\mathbf{q}},$$
+The potential energy in this system comes from the titular spring. Here we can use a simple quadratic energy defined as
 
-where $M$ is called the *mass* matrix or *inertia* tensor. We'll see later in the course that mass matrices can get a lot more complicated than just diagonal. 
+$$ V = \frac{1}{2}k\mathbf{x}^2$$,
 
-It's really the force computation that gets effected most by the presence of multiple springs, but its easiest to see this by starting with the potential energy. 
+where $k$ is the "stiffness of the spring", the proportionality constant that converts a measure of stretch or compression to an energy.
 
-The potential energy of our entire mass spring system, is the sum of the potential energy of all the springs
+From the Euler-Lagrange equations we can show that the motion of this single mass and spring satisfies
 
-$$V\left(\mathbf{q}\right) = \sum_{i=0}^{m-1}V_i\left(\mathbf{q_0},\mathbf{q_1}\right),$$
+$$m\ddot{\mathbf{x}} = -k\mathbf{x},$$
 
-where $\mathbf{q_0}$ and $\mathbf{q_1}$ are the generalized coordinates (the world space positions) of the two end points of the $i^{th}$ spring. 
+in other words, it satisfies Newton's Second Law in its standard form, with the forces given by [Hooke's Law](https://en.wikipedia.org/wiki/Hooke%27s_law). While this example might seem trivial, later in the course we'll see examples where applying the Principle of Least Action will be crucial for deriving equations of motion for more complicated objects.
 
-To make things a little easier conceptually, we are going to introduce *another* set of convenience matrices $S_i$. Each $S_i$ performs the following useful function 
+### Numerical Time Integration 
 
-$$ \begin{bmatrix}\mathbf{q}_0\\ \mathbf{q}_1\end{bmatrix} = \mathbf{S}_i \mathbf{q}.$$
+A standard approach to solving the *second-order* differential equation above is to transform it into the coupled first-order system
 
-An $S_i$ matrix ($6\times n$) selects, from all the particle positions, the end-point positions of the $i^{th}$ spring. Why is this convenient ? Because we can now rewrite the potential energy of the mass-spring system in terms of $\mathbf{q}$. 
+$$\begin{eqnarray*} 
+m\dot{\mathbf{v}} &=& -k\mathbf{x} \\ 
+\dot{\mathbf{x}} &=& \mathbf{v}  
+\end{eqnarray*}$$
 
-So we can express the potential energy of the mass-spring system like this
+where we introduce the velocity of the mass-spring system as a seperate variable and the second equation enforces the approriate relationship between position and velocity. Now, given some initial position and velocity (together called the intial state) for the mass-spring system, our goal is to compute subsequent states which represent the trajectory of the particle over time. This process is called time integration because we are *integrating* the first-order differential equation, across time, to create the solution. Because almost all the systems we deal with will not admit analytical solutions, we are going to do this numerically. Let's take a look at four of the most common integration schemes. 
 
-$$V\left(\mathbf{q}\right) = \sum_{i=0}^{m-1} V_i\left(S_i\mathbf{q}\right),$$
+### Numerical Solution Attempt #1: Forward Euler Integration
 
-and now we can take derivatives of this in order to compute, say the forces. Let's see what happens if we compute the gradient of this energy with respect to the generalized coordinates. Then we get
+Forward Euler is the simplest algorithm for numerical integration of an ordinary differential equation. It's so popular that it even got a shout out in the blockbuster movie [Hidden Figures](https://www.insidescience.org/news/exploring-math-hidden-figures). Sadly, we will quickly see that, for elastic objects, like springs, it has some pretty serious downfalls.
 
-$$\frac{\partial V\left(\mathbf{q}\right)}{\partial \mathbf{q}} = \sum_{i=0}^{m-1}S_i^T\frac{\partial V_i\left(S_i\mathbf{q}\right)}{\partial \mathbf{q}},$$
+Forward Euler discretizes our differential equation by replacing all derivatives with first-order, finite difference approximations of the form 
 
-and because we know that the energy, in this case, only depends on the end points of the spring ($\mathbf{q_0}$ and $\mathbf{q_1}$) we can make one final modification:
+$$ \dot{y}^{t} = \frac{y^{t+1} - y^{t}}{\Delta t},$$
 
-$$\frac{\partial V\left(\mathbf{q}\right)}{\partial \mathbf{q}} = \sum_{i=0}^{m-1}S_i^T\frac{\partial V_i\left(\mathbf{q_0},\mathbf{q_1}\right)}{\partial \mathbf{q_0},\mathbf{q_1}}.$$
+where we use superscripts to indicate whether we are accessing a variable at the current ($t$) or next ($t+1$) timestep. By rearranging we see that
 
-Let's unpack this a bit. First, you should be convinced that $\frac{\partial V_i\left(\mathbf{q_0},\mathbf{q_1}\right)}{\partial \mathbf{q_0},\mathbf{q_1}}$ is just computing the potential energy gradient of  one spring with respect to its end-points, exactly like what we discussed in the previous section. The only mysterious piece is our $S_i^T$. That matrix is distributing the local end-point forces into the global force vector, so that they they act on the proper mass particles in the system. This summation and distribution of local forces is called **assembly** because it assembles the global force vector from local contributions. Assembly of local quantities comes up all the time in simulation, in fact we are going to see it used one more time in the next section. 
+$$y^{t+1} = y^{t} + \Delta t \dot{y}^{t}$$
 
-**Implementation Note:** You could implement assembly by mirroring the formula above. In other words, instantiate a sparse $S_i$ matrix for each spring. However that is a waste of space and resources. Instead it's better to implement the *action* of $S_i^T$ by indexing directly into the global force vector. 
+Following the same basic approach for our coupled, first-order system yields a scheme to compute an updated state for our mass spring system.
 
-### Linearly-Implicit Time Integration
+### Attempt #2: Runge-Kutta Integration
 
-As we discussed in the previous assignment, making the right choice of time integrator is crucial for the stability, appearance and performance of a simulation. In this assignment we are going to implement one of the most famous time integrators in computer graphics, the *Linearly-Implicit Time Integrator*. This integrator is not fully-implicit like backward Euler, but it is efficient to compute and reasonably stable, thus it is a good initial place to start when integrating an elastic system like these mass-springs. 
+Explicit Runge-Kutta methods (which is what you will implement here) rely on multiple evalations of the right hand side of the ODE to approximate its time integral. In particular, $4^{th}$ order [Runge-Kutta](https://en.wikipedia.org/wiki/Runge–Kutta_methods) requires four such evaluations and combines them to compute an update of the object state which is much better behaved than that of Forward Euler.  
 
-You should be able to convince yourself that, given the potential and kinetic energies above, that the backward Euler update for a 3D, mass-spring system is
+### Attempt #3: Implicit (Backward) Euler 
 
-\begin{align} 
-M\dot{\mathbf{q}}^{t+1} & =  M\dot{\mathbf{q}}^{t} + \Delta t \mathbf{f}\left(\mathbf{q}^{t+1}\right)\\
-        \mathbf{q}^{t+1} & =  \mathbf{q}^{t} + \Delta t \dot{\mathbf{q}}^{t+1}
-\end{align}.
+The key difference between Implicit, or Backward, Euler and Forward Euler time integration is that Implicit Euler no longer just relies on the configuration and velocity of the mass-spring at the current time step. Instead it tries to look into the future to make the integration more robust. Consider the following differential equation
 
-Our big problem is estimating the effect of the forces at $\mathbf{q}^{t+1}$. Rather than do this fully, the linearly-implicit integrator linearizes the system around the current state via [Taylor expansion](https://en.wikipedia.org/wiki/Taylor_series) and uses this approximation to update the velocity. 
+$$ K\dot{\mathbf{y}} = \mathbf{f}\left(\mathbf{y}\right).$$
 
-We proceed by exploiting the fact that $\mathbf{q}^{t+1} = \mathbf{q}^{t} + \Delta t \dot{\mathbf{q}}^{t+1}$ and making the assumption that \Delta t is sufficiently small (i.e we try and find a \Delta t so that the simulation doesn't explode). Then we can replace the above update equations with
+Backward Euler discretizes the time derivitive using the same first-order finite difference as Forward Euler. However, while Forward Euler would choose to evaluate the function $\mathbf{f}$ at time $t$, Backward Euler chooses to evaluate it at time $t+1$ yielding the following update scheme
 
-\begin{align} M\dot{\mathbf{q}}^{t+1} &= M\dot{\mathbf{q}}^{t} + \Delta t \mathbf{f}\left(\mathbf{q}^t\right) + \Delta t^2\underbrace{\frac{\partial \mathbf{f}}{\partial \mathbf{q}}}_{\mbox{K}} \dot{\mathbf{q}}^{t+1} \\
-\mathbf{q}^{t+1} &= \mathbf{q}^{t} + \Delta t \dot{\mathbf{q}}^{t+1}
-\end{align}.
+$$ K\mathbf{y}^{t+t} = K\mathbf{y}^{t} +\Delta t\mathbf{f}\left(\mathbf{y}^{t+1}\right).$$
 
-Importantly we see the appearance of the force gradient, $K$, called the *Stiffness matrix* (this will come up again and again :) ) which encodes the change in the forcing behaviour of the object, in a local region around the current state. Because our *generalized forces* are the negative gradient of the potential energy function, the Stiffness matrix is given by
+If $\mathbf{f}$ is a linear function in $\mathbf{y}$, this update can be efficiently evaluated (you'll do it in this assignment!)
+.
+### Attempt #4: Symplectic Euler
 
-$$ K = -\frac{\partial^2 V\left(\mathbf{q}\right)}{\partial \mathbf{q}^2},$$
+[Symplectic Euler](https://en.wikipedia.org/wiki/Semi-implicit_Euler_method), so named because it preserves the area carved out by an objects phase-space trajectory, is well suited to the types of coupled, first-order ordinary differential equations we will be solving. Given the system
 
-or $K$ is the negative Hessian of the potential energy. **Warning:** missing negative signs are the number one affliction for otherwise happy physics simulators. 
+$$\begin{eqnarray*} 
+m\dot{\mathbf{v}} &=& \mathbf{f}\left(\mathbf{x}\right) \\ 
+\dot{\mathbf{x}} &=& \mathbf{v}  
+\end{eqnarray*}, $$
 
-Ok, let's do one more rearrangement of these update equations to get them in their final, solvable form:
+Symplectic Euler applies the updates
 
-\begin{align} \left(M-\Delta t^2 K\right)\dot{\mathbf{q}}^{t+1} &= M\dot{\mathbf{q}}^{t} + \Delta t \mathbf{f}\left(\mathbf{q}^t\right) \\
-\mathbf{q}^{t+1} &= \mathbf{q}^{t} + \Delta t \dot{\mathbf{q}}^{t+1}
-\end{align}.
+$$m\mathbf{v}^{t+1} = m\mathbf{v}^{t} + \Delta t \mathbf{f}\left(\mathbf{x}^{t}\right)$$
 
-Now we see where linearly-implicit time integration gets its performance, it requires solving a single, sparse, symmetric linear system. **Note:** A fun game is to convince yourself that $K$ is both sparse (argue from the connectivity of the mass spring system) and symmetric (argue from Newton's 3rd law).  
+and then
 
-In practice, once we have *assembled* (there's that word again) $M$ and $K$ we can form $\left(M-\Delta t^2 K\right)$ and solve this linear system using off-the-shelf tools. For this assignment you can use the Simplicial LDLT solver built into the [Eigen](https://eigen.tuxfamily.org/dox/group__TopicSparseSystems.html) library. 
+$$\mathbf{x}^{t+1} = \mathbf{x}^{t} + \Delta t \mathbf{v}^{t+1}.$$
 
-Let's end this section by talking about the assembly of $K$. In the same way as for the forces, we can directly compute the second derivative of our energy
+## Tasks
 
-$$\frac{\partial^2 V\left(\mathbf{q}\right)}{\partial \mathbf{q}^2} = \sum_{i=0}^{m-1}S_i^T\underbrace{\frac{\partial^2 V_i\left(\mathbf{q_0},\mathbf{q_1}\right)}{\partial \left(\mathbf{q_0},\mathbf{q_1}\right)^2}}_{H_i}S_i.$$
-
-Where $H_i$ is the local spring energy Hessian (so the Hessian of the $i^{th}$ spring energy wrt to its end points). 
-
-**WARNING:** to assemble the stiffness matrix replace $H_i$ with $K_i$, the per-spring stiffness matrix. 
-
-Again, you could implement this using a whole bunch of $S_i$ matrices, but instead its better to implement it via direct indexing. In particular, in Eigen, you can construct a list of [``Eigen::Triplet``](https://eigen.tuxfamily.org/dox/group__TutorialSparse.html) objects that can be used to directly initialize a sparse matrix. 
-
-**Hint:** a good test for any integrator is to test that your object doesn't move when no forces are exerted on it. 
-
-### Fixed Displacement Boundary Conditions
-
-A Mass-Spring system acting purely under gravity is very boring, it just falls straight down (a rigid motion!). What's the point of doing all this work of we don't get a wiggly bunny out of it? In order to generate wiggliness, we need to, at a minimum, fix parts of our object to the environment. These are the *boundary conditions* for the physics simulation. Because we are fixing the position of particles, these are *Dirichlet* boundary conditions. There are a few ways to go about this, but we are going to take a projection approach -- we will express our generalized coordinates using a smaller set of variables. 
-
-Given that a fixed vertex, by definition, does not move, it makes sense to choose all other vertex positions as our subspace variables. We can now construct a linear subspace which rebuilds all the positions of our particles from this subspace --
-
-$$ \mathbf{q} = P^T\hat{\mathbf{q}} + \mathbf{q}_{fixed}.$$
-
-Let's say we have $l$ fixed vertices. Then $\hat{\mathbf{q}}$ is an $3(n-l)$ length vector which includes the positions of all our non-fixed particles. $\mathbf{q}_{fixed}$ is a $3n$ vector which stores a $0$'s in the positions of our non-fixed particles and the fixed position of fixed particles. It's the matrix $P$ that performs the magic of stitching these things together. 
-
-$P$ is a bit like the selection matrices, the $S_i$'s used to explain assembly. It selects out non-fixed vertex positions from $\hat{\mathbf{q}}$ and places them in the correct position in the global $\mathbf{q}$ vector. Fixed positions are then filled in with values from $\mathbf{q}_{fixed}$. If we take $\hat{\mathbf{q}}$ as the generalized coordinates of our physical system, we will directly encode these fixed boundary conditions into the simulator. 
-
-This is exactly what the assignment 2 simulator does. In practice, it is  useful to implement $P$ as a sparse matrix, and you will get the chance to do just that in assignment 2. 
+In this assignment we'll primarily be interested in the energetic behaviour of our mass-spring system when integrated with the four time integrators described above. The user interface for this assignment includes a window which displays the trajectory of the mass-spring system in the [*phase plane*](https://en.wikipedia.org/wiki/Phase_plane) of the mass spring system over time. Images of the correct phase plane trajectories are included below.  
 
 ### Groundrules
 
@@ -276,51 +239,52 @@ Implementations of nearly any task you're asked to implemented in this course ca
 
 For this course most functions will be implemented in **.cpp** files. In this assignment the only exception is that time integrators are implemented in **.h** files. This is due to the use of lambda functions to pass force data to the time integration algorithms.
 
-### src/T_particle.cpp 
-
-Compute the kinetic energy of a single mass particle.
-
-### src/V_gravity_particle.cpp
-
-Compute the gravitational potental energy of a single mass particle.
-
-### src/V_spring_particle_particle.cpp
-
-Compute the potential energy of a spring which connects two particles. 
-
-### src/dV_gravity_particle_dq.cpp
-
-Compute the gradient of the gravitational potential energy for a single particle.
-
 ### src/dV_spring_particle_particle_dq.cpp
 
-Compute the forces exerted by a single spring on its end-points.
- 
+Compute the derivative of the potential energy with respect to the generalized coordinates. 
+
 ### src/d2V_spring_particle_particle_dq2.cpp
 
-Compute the per-spring hessian of the spring potential energy. 
+Compute the second derivative of the potential energy with respect to the generalized coordinates.
 
-### src/mass_matrix_particles.cpp
+### include/forward_euler.h 
 
-Compute the sparse, diagonal mass matrix that stores the mass of each particle in the mass-spring on its diagonal.
+Advance the mass spring system one step forward in time using the Forward Euler algorithm.
 
-### src/assemble_forces.cpp
+![Phase space trajectory for Forward Euler integration](images/forward_euler.gif)
 
-Iterate through each spring in the mesh, compute the per-spring forces and assemble the global force vector.
+Forward Euler is the default integrator used by the assignment code. 
 
-### src/assemble_stiffness.cpp
+### include/runge_kutta.h
 
-Iterate through each spring in the mesh, compute the per-spring stiffness matrix and assemble the global, sparse stiffness matrix. To do this, you should construct a list of ``Eigen::Triplet`` objects and then set your sparse matrix using these [triplets](https://eigen.tuxfamily.org/dox/group__TutorialSparse.html).
+Advance the mass spring system one step forward in time using the $4^{th} order$ Runge-Kutta algorithm.
 
-### src/fixed_point_constraints.cpp
+![Phase space trajectory for Runge-Kutta integration](images/rk4.gif)
 
-Compute the sparse projection matrix which projects out fixed point vertices. 
+To run the assignment code with the Runge-Kutta algorithm use
 
-### src/pick_nearest_vertices.cpp
+    ./a1-mass-spring-1d 'rk'
 
-Given a point on the screen (i.e a mouse position clicked by the user), find all vertices within a given radius. **For this method, and this method alone** you are allowed to use the ``igl::unproject`` and ``igl::ray_mesh_intersect`` functions. I have provided the appropriate ray shooting function for you to use in the code as well. 
+### include/backward_euler.h
 
-### include/linearly_implicit_euler.h
+Advance the mass spring system one step forward in time using the Backward Euler algorithm
 
-Implement the linearly implicit Euler time integrator. 
+![Phase space trajectory for Backward Euler integration](images/backward_euler.gif)
+
+To run the assignment code with the Backward Euler algorithm use
+
+    ./a1-mass-spring-1d 'be'
+
+### include/symplectic_euler.h 
+
+Advance the mass spring system one step forward in time using the Symplectic Euler algorithm
+
+![Phase space trajectory for Symplectic Euler integration](images/symplectic_euler.gif)
+
+To run the assignment code with the Symplectic Euler algorithm use
+
+    ./a1-mass-spring-1d 'se'
+
+
+
 
