@@ -5,7 +5,7 @@ void assemble_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Ei
                      Eigen::Ref<const Eigen::MatrixXd> V, Eigen::Ref<const Eigen::MatrixXi> E, Eigen::Ref<const Eigen::VectorXd> l0, 
                      double mass, double k) { 
     f.resize(q.rows());
-    std::cout << "ASSEMBLE_FORCES::DEBUG::f.rows():" << f.rows() << std::endl;
+    //std::cout << "ASSEMBLE_FORCES::DEBUG::f.rows():" << f.rows() << std::endl;
     //std::cout << "ASSEMBLE_FORCES::DEBUG::q.rows():" << q.rows() << std::endl;
     for (int y = 0; y < E.rows(); y++)
     {

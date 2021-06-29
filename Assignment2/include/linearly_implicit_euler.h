@@ -22,10 +22,21 @@ inline void linearly_implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, d
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_force.rows():" << tmp_force.rows() << std::endl;
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_stiffness.rows():" << tmp_stiffness.rows() << std::endl;
     tmp_force.resize(q.rows());
+
     //tmp_stiffness = Eigen::SparseMatrixd(q.rows(), q.rows());
     Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
     force(tmp_force, q, qdot);
     stiffness(tmp_stiffness, q, qdot);
+    solver.compute(mass-dt*dt*tmp_stiffness);
+    if(solver.info()!=Eigen::Success){
+        std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::M-dt*dt*K::ERROR" << std::endl;
+    }
+    Eigen::VectorXd tqdot = qdot;
+    qdot = solver.solve(mass*tqdot+dt*tmp_force);
+    if(solver.info()!=Eigen::Success){
+        std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::M*q.transpose()+dt*tmp_force::ERROR" << std::endl;
+    }
+    q = q+dt*qdot;
 
     //q += 0.0000001*q;
 }

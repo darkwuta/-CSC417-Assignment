@@ -6,7 +6,7 @@ void assemble_stiffness(Eigen::SparseMatrixd &K, Eigen::Ref<const Eigen::VectorX
                      double k) { 
     typedef Eigen::Triplet<double> T;
     std::vector<T> tripletList;
-    std::cout << "ASSEMBLE_STIFFNESS::DEBUG::K.rows():" << K.rows() << std::endl;
+    //std::cout << "ASSEMBLE_STIFFNESS::DEBUG::K.rows():" << K.rows() << std::endl;
     for (int y = 0; y < E.rows(); y++)
     {
         Eigen::Matrix66d H;
@@ -28,11 +28,14 @@ void assemble_stiffness(Eigen::SparseMatrixd &K, Eigen::Ref<const Eigen::VectorX
             }
         }
     }
-    std::cout << "ASSEMBLE_STIFFNESS::DEBUG::tripletList.size():" << tripletList.size() << std::endl;
+    //std::cout << "ASSEMBLE_STIFFNESS::DEBUG::tripletList.size():" << tripletList.size() << std::endl;
     /*std::cout << "ASSEMBLE_STIFFNESS::DEBUG::K.rows:" << K.rows()<<" K.cols"<<K.cols() << std::endl;
     std::cout << "ASSEMBLE_STIFFNESS::DEBUG::K.IsRowMajor():" << K.IsRowMajor()<< std::endl;
     std::cout << "ASSEMBLE_STIFFNESS::DEBUG::sm2.IsRowMajor():" << K.IsRowMajor() << std::endl;*/
     //sm2.setFromTriplets(1, 5);
+    K.reserve(tripletList.size());
+    K.resize(3*V.rows(),3*V.rows());
+    //std::cout << "ASSEMBLE_STIFFNESS::DEBUG::K.size():" << K.size() << std::endl;
 
     K.setFromTriplets(tripletList.begin(), tripletList.begin());
         

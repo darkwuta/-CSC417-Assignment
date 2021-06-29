@@ -71,6 +71,7 @@ void simulate() {
         //assemble stiffness matrix,
         auto stiffness = [&](Eigen::SparseMatrixd &K, Eigen::Ref<const Eigen::VectorXd> q, Eigen::Ref<const Eigen::VectorXd> qdot) { 
             assemble_stiffness(K, P.transpose()*q+x0, P.transpose()*qdot, V, E, l0, k);
+            //std::cout<<
             K = P*K*P.transpose();
         };
 
@@ -99,7 +100,7 @@ bool draw(igl::opengl::glfw::Viewer & viewer) {
             PE += V_spring;
         }
         
-        Visualize::add_energy(t, KE, PE);
+        //Visualize::add_energy(t, KE, PE);
 
     //update vertex positions using simulation
     Visualize::update_vertex_positions(0, P.transpose()*q + x0);

@@ -14,5 +14,7 @@ void fixed_point_constraints(Eigen::SparseMatrixd &P, unsigned int q_size, const
 	
 	//std::cout << "FIXED_POINT_CONSTRAINTS::q_size:" << q_size << std::endl;
 	//std::cout << "FIXED_POINT_CONSTRAINTS::indices.size():" << indices.size() << std::endl;
+    std::cout << "FIXED_POINT_CONSTRAINTS::P.size():" << P.size() << std::endl;
 	P.setFromTriplets(tripletList.begin(), tripletList.end());
+
 }
