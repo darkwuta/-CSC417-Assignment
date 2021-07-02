@@ -21,20 +21,65 @@ inline void linearly_implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, d
                             Eigen::VectorXd &tmp_force, Eigen::SparseMatrixd &tmp_stiffness) {
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_force.rows():" << tmp_force.rows() << std::endl;
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_stiffness.rows():" << tmp_stiffness.rows() << std::endl;
-    tmp_force.resize(q.rows());
-
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::q" << q << std::endl;
     //tmp_stiffness = Eigen::SparseMatrixd(q.rows(), q.rows());
-    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
+    
     force(tmp_force, q, qdot);
     stiffness(tmp_stiffness, q, qdot);
-    solver.compute(mass-dt*dt*tmp_stiffness);
-    if(solver.info()!=Eigen::Success){
-        std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::M-dt*dt*K::ERROR" << std::endl;
-    }
-    Eigen::VectorXd tqdot = qdot;
-    qdot = solver.solve(mass*tqdot+dt*tmp_force);
-    if(solver.info()!=Eigen::Success){
-        std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::M*q.transpose()+dt*tmp_force::ERROR" << std::endl;
+    //Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
+    //solver.compute(mass-dt*dt*tmp_stiffness);
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::mass.rows():" << mass.rows() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::mass.cols():" << mass.cols() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_stiffness.rows():" << tmp_stiffness.rows() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_stiffness.cols():" << tmp_stiffness.cols() << std::endl;
+    //if(solver.info()!=Eigen::Success){
+    //    std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::M-dt*dt*K::ERROR" << std::endl;
+    //}
+    //Eigen::VectorXd tqdot = qdot;
+    //qdot = solver.solve(mass*tqdot+dt*tmp_force);
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::qdot.rows():" << qdot.rows() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::qdot.cols():" << qdot.cols() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::mass.rows():" << mass.rows() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::mass.cols():" << mass.cols() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_force.rows():" << tmp_force.rows() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_force.cols():" << tmp_force.cols() << std::endl;
+    //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::qdot:" << qdot << std::endl;
+    //if(solver.info()!=Eigen::Success){
+    //    std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::M*qdot+dt*tmp_force::ERROR" << std::endl;
+    //}
+    int rows = q.rows();
+    //outerSizeÃ»ÎÊÌâ
+    //for (int k = 0; k < tmp_stiffness.outerSize(); ++k)
+    //{
+    //    for (Eigen::SparseMatrix<double>::InnerIterator it(tmp_stiffness, k); it; ++it)
+    //    {
+    //        std::cout << "FIXED_POINT_CONSTRAINTS::it.value:" << it.value() << std::endl;
+    //        std::cout << "FIXED_POINT_CONSTRAINTS::it.row():" << it.row() << std::endl;
+    //        std::cout << "FIXED_POINT_CONSTRAINTS::it.col():" << it.col() << std::endl;
+    //        std::cout << "FIXED_POINT_CONSTRAINTS::it.index():" << it.index() << std::endl;
+    //    }
+    //}
+    
+    for (unsigned int i = 0; i < rows; i++)
+    {
+        //std::cout << "ASSEMBLE_STIFFNESS::DEBUG::K.coeffRef(5,5):" << tmp_stiffness.coeffRef(5, 5) << std::endl;
+        //Eigen::SparseMatrix<double>::InnerIterator tm(mass, k);
+        //Eigen::SparseMatrix<double>::InnerIterator tk(tmp_stiffness, k);
+
+        if (q(i) == 0)
+            continue;
+        double m = 1;
+        double k = 1000000;
+        double f = tmp_force(i);
+        double tqdot = qdot(i);
+
+        //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::f:" << f << std::endl;
+        //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::m:" << tm.value() << std::endl;
+        //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::k:" << k << std::endl;
+        
+        //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tqdot:" << tqdot << std::endl;
+
+        qdot(i) = (m * tqdot + dt * f) / (m - dt * dt * k);
     }
     q = q+dt*qdot;
 

@@ -100,7 +100,7 @@ bool draw(igl::opengl::glfw::Viewer & viewer) {
             PE += V_spring;
         }
         
-        //Visualize::add_energy(t, KE, PE);
+        Visualize::add_energy(t, KE, PE);
 
     //update vertex positions using simulation
     Visualize::update_vertex_positions(0, P.transpose()*q + x0);
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
     std::cout<<"Start A2\n";
 
     //load geometric data 
-    igl::readMESH("../data/coarse_bunny.mesh",V,T, F);
+    igl::readMESH("D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment2/data/coarse_bunny.mesh",V,T, F);
     igl::boundary_facets(T, F);
     F = F.rowwise().reverse().eval();
     igl::edges(T,E);
@@ -139,12 +139,12 @@ int main(int argc, char **argv) {
     }
 
     x0 = q - P.transpose()*P*q; //vector x0 contains position of all fixed nodes, zero for everything else
-    
+    //std::cout << "MAIN::DEBUG::x0:" << x0 << std::endl;
     //correct M, q and qdot so they are the right size
     q = P*q;
     qdot = P*qdot;
     M = P*M*P.transpose();
-
+    //std::cout << "MAIN::DEBUG::P.transpose()*q+x0:" << P.transpose() * q + x0 << std::endl;
     //run simulation in seperate thread to avoid slowing down the UI
     std::thread simulation_thread(simulate);
     simulation_thread.detach();
