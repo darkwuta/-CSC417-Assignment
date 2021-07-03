@@ -40,7 +40,7 @@ void assemble_stiffness(Eigen::SparseMatrixd &K, Eigen::Ref<const Eigen::VectorX
         {
             for (int b = 0; b < 3; b++)
             {
-                tripletList.push_back(T(i * 3 + a, i * 3 + b, Kaa(a, b)));
+                tripletList.push_back(T(i * 3 + a, i * 3 + b, -Kaa(a, b)));
             }
         }
         //Kab
@@ -48,7 +48,7 @@ void assemble_stiffness(Eigen::SparseMatrixd &K, Eigen::Ref<const Eigen::VectorX
         {
             for (int b = 0; b < 3; b++)
             {
-                tripletList.push_back(T(i * 3 + a, j * 3 + b, Kab(a, b)));
+                tripletList.push_back(T(i * 3 + a, j * 3 + b, -Kab(a, b)));
             }
         }
         //Kba
@@ -56,7 +56,7 @@ void assemble_stiffness(Eigen::SparseMatrixd &K, Eigen::Ref<const Eigen::VectorX
         {
             for (int b = 0; b < 3; b++)
             {
-                tripletList.push_back(T(j * 3 + a, i * 3 + b, Kba(a, b)));
+                tripletList.push_back(T(j * 3 + a, i * 3 + b, -Kba(a, b)));
             }
         }
         //Kbb
@@ -64,7 +64,7 @@ void assemble_stiffness(Eigen::SparseMatrixd &K, Eigen::Ref<const Eigen::VectorX
         {
             for (int b = 0; b < 3; b++)
             {
-                tripletList.push_back(T(j * 3 + a, j * 3 + b, Kbb(a, b)));
+                tripletList.push_back(T(j * 3 + a, j * 3 + b, -Kbb(a, b)));
             }
         }
     }

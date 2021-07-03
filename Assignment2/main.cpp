@@ -141,6 +141,7 @@ int main(int argc, char **argv) {
     x0 = q - P.transpose()*P*q; //vector x0 contains position of all fixed nodes, zero for everything else
     //std::cout << "MAIN::DEBUG::x0:" << x0 << std::endl;
     //correct M, q and qdot so they are the right size
+    //线性solver没办法解就是因为这里的P
     q = P*q;
     qdot = P*qdot;
     M = P*M*P.transpose();
