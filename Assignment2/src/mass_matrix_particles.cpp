@@ -2,7 +2,7 @@
 
 void mass_matrix_particles(Eigen::SparseMatrixd &M, Eigen::Ref<const Eigen::VectorXd> q, double mass) {
 
-    M = Eigen::SparseMatrixd(q.rows(), q.rows());
+    M.resize(q.size(), q.size());
     typedef Eigen::Triplet<double> T;//以i，j，mass为索引的容器
     std::vector<T> tripletList;
     M.setZero();

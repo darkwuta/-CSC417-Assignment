@@ -23,20 +23,24 @@ inline void linearly_implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, d
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_stiffness.rows():" << tmp_stiffness.rows() << std::endl;
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::q" << q << std::endl;
     //tmp_stiffness = Eigen::SparseMatrixd(q.rows(), q.rows());
-    
+    Eigen::SparseMatrixd A;
+    Eigen::SparseMatrixd K;
+    Eigen::VectorXd b,x;
+
     force(tmp_force, q, qdot);
     stiffness(tmp_stiffness, q, qdot);
+
+    A = (mass - dt * dt * tmp_stiffness);
+    b = mass * qdot + dt * tmp_force;
+
     Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
-    solver.compute(mass-dt*dt*tmp_stiffness);
-    std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::mass.rows():" << mass.rows() << std::endl;
-    std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::mass.cols():" << mass.cols() << std::endl;
-    std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_stiffness.rows():" << tmp_stiffness.rows() << std::endl;
-    std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::tmp_stiffness.cols():" << tmp_stiffness.cols() << std::endl;
+    solver.compute(A);
     if(solver.info()!=Eigen::Success){
-        std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::M-dt*dt*K::ERROR" << std::endl;
+        std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::solver.compute(A)::ERROR" << std::endl;
+        return;
     }
-    Eigen::VectorXd tqdot = qdot;
-    qdot = solver.solve(mass*tqdot+dt*tmp_force);
+    x = solver.solve(b);
+    qdot = x;
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::qdot.rows():" << qdot.rows() << std::endl;
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::qdot.cols():" << qdot.cols() << std::endl;
     //std::cout << "LINEARLY_IMPLICIT_EULER::DEBUG::mass.rows():" << mass.rows() << std::endl;
@@ -82,7 +86,7 @@ inline void linearly_implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, d
     //    qdot(i) = (m * tqdot + dt * f) / (m - dt * dt * k);
     //}
     //qdot = (mass * qdot + 0.0001 * tmp_force);
-    q = q+ dt *qdot;
+    q = q + dt * qdot;
 
     //q += 0.0000001*q;
 }
