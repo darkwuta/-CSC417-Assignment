@@ -1,6 +1,7 @@
 #include <fixed_point_constraints.h>
 #include <algorithm>
 #include"iostream"
+//自己的有问题
 void fixed_point_constraints(Eigen::SparseMatrixd &P, unsigned int q_size, const std::vector<unsigned int> indices) {
 	//std::cout << "FIXED_POINT_CONSTRAINTS::DEBUG::P.cols:" << P.cols() << std::endl;
 	//std::cout << "FIXED_POINT_CONSTRAINTS::DEBUG:P.rows:" << P.rows() << std::endl;
@@ -60,6 +61,13 @@ void fixed_point_constraints(Eigen::SparseMatrixd &P, unsigned int q_size, const
 	P.setZero();
 	int count = 0;
 
+	//要让P的每一行都有1，1要往后挪
+	//P 1 0 0 0 0 0 0 0 0 
+	//  0 1 0 0 0 0 0 0 0
+	//  0 0 1 0 0 0 0 0 0
+	//  0 0 0 0 0 0 1 0 0
+	//  0 0 0 0 0 0 0 1 0
+	//  0 0 0 0 0 0 0 0 1
 
 	for (int i = 0; i < q_size - 3 * indices.size(); i++) {
 		if (count < indices.size() && i == 3.0 * indices[count] - 3.0 * count) { count++; }
