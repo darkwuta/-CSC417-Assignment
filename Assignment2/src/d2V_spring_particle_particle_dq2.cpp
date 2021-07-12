@@ -24,7 +24,7 @@ void d2V_spring_particle_particle_dq2(Eigen::Ref<Eigen::Matrix66d> H, Eigen::Ref
     //H(0, 0) = stiffness * (l0 - l) * 1.0 / l 
     //    - (stiffness * pow(q0[0] - q1[0] , 2.0)) / (l*l)
     //    - (stiffness * pow(q0[0] - q1[0], 2.0) * (l0 - l) / (l*l*l));
-    //H(0, 0) = -(stiffness - stiffness * l0 * (l - (pow((q0[0] - q1[0]), 2) / l)) / (l * l));
+    H(0, 0) = -(stiffness - stiffness * l0 * (l - (pow((q0[0] - q1[0]), 2) / l)) / (l * l));
     H(0, 1) = (stiffness * 2 * (q0[0]  - q1[0] ) * (q0[1] * 2.0 - q1[1] * 2.0) * (-1.0 / 4.0)) / (l*l) - (stiffness * 2 * (q0[0]  - q1[0] ) * (q0[1] * 2.0 - q1[1] * 2.0) * (l0 - l) * 1.0 / (l*l*l)) / 4.0;
    // H(0, 1) = (stiffness - stiffness * l0 * (l - (pow((q1[0] - q0[0]), 2) / l)) / (l*l));
     H(0, 2) = (stiffness * 2 * (q0[0]  - q1[0] ) * (q0[2] * 2.0 - q1[2] * 2.0) * (-1.0 / 4.0)) / (l*l) - (stiffness * 2 * (q0[0]  - q1[0] ) * (q0[2] * 2.0 - q1[2] * 2.0) * (l0 - l) * 1.0 / (l*l*l)) / 4.0;

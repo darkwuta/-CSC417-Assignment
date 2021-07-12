@@ -67,8 +67,8 @@ int main(int argc, char **argv) {
     Eigen::MatrixXd V_cow, V_spring;
     Eigen::MatrixXi F_cow, F_spring;
 
-    igl::readOBJ("../data/spot.obj", V_cow, F_cow);
-    igl::readOBJ("../data/spring.obj", V_spring, F_spring);
+    igl::readOBJ("D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment1/data/spot.obj", V_cow, F_cow);
+    igl::readOBJ("D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment1/data/spring.obj", V_spring, F_spring);
 
     //setup simulation variables
     q.resize(1);
