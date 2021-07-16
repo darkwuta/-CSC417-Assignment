@@ -75,11 +75,11 @@ If you are using Mac or Linux, then issue:
 Compiling the code in the above manner will yield working, but very slow executables. To run the code at full speed, you should compile it in release mode. Starting in the **build directory**, do the following:
 
     cmake .. -DCMAKE_BUILD_TYPE=Release
-    
+
 Followed by:
 
     make 
-  
+
 Your code should now run significantly (sometimes as much as ten times) faster. 
 
 If you are using Windows, then running `cmake ..` should have created a Visual Studio solution file
@@ -408,5 +408,4 @@ Implement Newton's method with backtracking line search. Use the following param
 ### implicit_euler.h  
 
 Using your Newton's method, implement a fully implicit solver. **To ensure reasonable performance, use a maximum of five (5) iterations**.
-
 
