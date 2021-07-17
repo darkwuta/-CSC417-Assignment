@@ -326,10 +326,13 @@ inline void assignment_setup(int argc, char **argv, Eigen::VectorXd &q, Eigen::V
     igl::readMESH("D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment3/data/coarser_bunny.mesh",V,T, F);
     igl::readOBJ("D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment3/data/bunny_skin.obj", V_skin, F_skin);
 
+
+    std::cout << "load successed" << std::endl;
+
     if(argc > 1) {
         if(strcmp(argv[1], "arma") == 0) {
-            read_tetgen(V,T, "D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment3/data/data/arma_6.node", "D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment3/data/data/arma_6.ele");
-            igl::readOBJ("D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment3/data/data/armadillo.obj", V_skin, F_skin);
+            read_tetgen(V,T, "D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment3/data/arma_6.node", "D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment3/data/arma_6.ele");
+            igl::readOBJ("D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment3/data/armadillo.obj", V_skin, F_skin);
         
             bunny = false;
             fully_implicit = true;
