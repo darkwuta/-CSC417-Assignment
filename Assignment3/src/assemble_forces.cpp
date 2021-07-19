@@ -72,7 +72,7 @@ void assemble_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Ei
         f[3*tet_idx4+1] -= dV[10];
         f[3*tet_idx4+2] -= dV[11];
 
-    }    f = Eigen::VectorXd::Zero(q.rows());
+    }    
     
 
     };

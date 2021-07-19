@@ -73,10 +73,10 @@ bool pick_nearest_vertices(std::vector<unsigned int>& verts, Eigen::Ref<const Ei
             verts.push_back(qi);
         }
     }
-    if (verts.size() != 0)
-    {
-        std::cout << "pick_nearest_vertices" << std::endl;
-    }
+    //if (verts.size() != 0)
+    //{
+    //    std::cout << "pick_nearest_vertices" << std::endl;
+    //}
 
     return (verts.size() == 0 ? false : true);
 }
