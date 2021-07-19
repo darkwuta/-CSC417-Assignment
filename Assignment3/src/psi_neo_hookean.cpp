@@ -4,22 +4,38 @@
 void psi_neo_hookean(double &psi, 
                      Eigen::Ref<const Eigen::Matrix3d> F,
                      double C, double D) {
+    ////--------------------------------------- TODO 这个结果没问题，但是图会出现问题，一开始有T和T+V两个不画线，可能是因为并行的原因。
+    double J = F.determinant();
+    double trace = (F.transpose() * F).trace();
+    //这里一定要用2.0/3.0 ！！！！
+    psi = C * ((pow(J, -2.0 / 3.0) * trace) - 3) + D * pow(J - 1, 2);
     ////---------------------------------------
+    //double mu = C * 2;
+    //double lambda = D * 2;
+    //std::cout << "mu:" << mu << std::endl;
+    //std::cout << "lambda:" << lambda << std::endl;
+    // C = mu/2, D = lambda/2
     //double J = F.determinant();
-    //double trace = (F.transpose() * F).trace();
-    //psi = C * (pow(J, -2 / 3) * trace - 3) + D * pow(J - 1, 2);
-    ////---------------------------------------
-    double F1_1 = F(0, 0);
-    double F1_2 = F(0, 1);
-    double F1_3 = F(0, 2);
+    //psi = C * (pow(J, -2.0/3.0) * ((F.transpose()*F).trace()) - 3.0) + D * (J - 1.0)*(J - 1.0);
 
-    double F2_1 = F(1, 0);
-    double F2_2 = F(1, 1);
-    double F2_3 = F(1, 2);
+    //double Ic = F.squaredNorm();
+    //double Jminus1 = F.determinant() - 1.0 - mu/lambda;
+    //psi = 0.5 * (mu * (Ic - 3.0) + lambda * Jminus1 * Jminus1);
 
-    double F3_1 = F(2, 0);
-    double F3_2 = F(2, 1);
-    double F3_3 = F(2, 2);
+    /*double F1_1, F1_2, F1_3, F2_1, F2_2, F2_3, F3_1, F3_2, F3_3;
+    F1_1 = F(0, 0);
+    F1_2 = F(0, 1);
+    F1_3 = F(0, 2);
+    F2_1 = F(1, 0);
+    F2_2 = F(1, 1);
+    F2_3 = F(1, 2);
+    F3_1 = F(2, 0);
+    F3_2 = F(2, 1);
+    F3_3 = F(2, 2);
 
-    psi = C * (1.0 / pow(F1_1 * F2_2 * F3_3 - F1_1 * F2_3 * F3_2 - F1_2 * F2_1 * F3_3 + F1_2 * F2_3 * F3_1 + F1_3 * F2_1 * F3_2 - F1_3 * F2_2 * F3_1, 2.0 / 3.0) * (F1_1 * F1_1 + F1_2 * F1_2 + F1_3 * F1_3 + F2_1 * F2_1 + F2_2 * F2_2 + F2_3 * F2_3 + F3_1 * F3_1 + F3_2 * F3_2 + F3_3 * F3_3) - 3.0) + D * pow(-F1_1 * F2_2 * F3_3 + F1_1 * F2_3 * F3_2 + F1_2 * F2_1 * F3_3 - F1_2 * F2_3 * F3_1 - F1_3 * F2_1 * F3_2 + F1_3 * F2_2 * F3_1 + 1.0, 2.0);
+    psi = mu / 2 * (1.0 / pow(F1_1 * F2_2 * F3_3 - F1_1 * F2_3 * F3_2 - F1_2 * F2_1 * F3_3 + F1_2 * F2_3 * F3_1 + F1_3 * F2_1 * F3_2 - F1_3 * F2_2 * F3_1, 2.0 / 3.0) * (F1_1 * F1_1 + F1_2 * F1_2 + F1_3 * F1_3 + F2_1 * F2_1 + F2_2 * F2_2 + F2_3 * F2_3 + F3_1 * F3_1 + F3_2 * F3_2 + F3_3 * F3_3) - 3.0) + lambda / 2 * pow(-F1_1 * F2_2 * F3_3 + F1_1 * F2_3 * F3_2 + F1_2 * F2_1 * F3_3 - F1_2 * F2_3 * F3_1 - F1_3 * F2_1 * F3_2 + F1_3 * F2_2 * F3_1 + 1.0, 2.0);*/
+
+    // stable-neo with regular term
+    //psi = mu*log(F1_1*F1_1+F1_2*F1_2+F1_3*F1_3+F2_1*F2_1+F2_2*F2_2+F2_3*F2_3+F3_1*F3_1+F3_2*F3_2+F3_3*F3_3+1.0)*(-1.0/2.0)+(lambda*pow(lambda*mu*(-1.0/4.0)+mu/lambda-F1_1*F2_2*F3_3+F1_1*F2_3*F3_2+F1_2*F2_1*F3_3-F1_2*F2_3*F3_1-F1_3*F2_1*F3_2+F1_3*F2_2*F3_1+1.0,2.0))/2.0+(mu*(F1_1*F1_1+F1_2*F1_2+F1_3*F1_3+F2_1*F2_1+F2_2*F2_2+F2_3*F2_3+F3_1*F3_1+F3_2*F3_2+F3_3*F3_3-3.0))/2.0;
+
 }

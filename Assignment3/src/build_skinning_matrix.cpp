@@ -7,36 +7,48 @@ void build_skinning_matrix(Eigen::SparseMatrixd &N, Eigen::Ref<const Eigen::Matr
                                                    Eigen::Ref<const Eigen::MatrixXd> V_skin) {
     //----------------------------------------------
     //----------------------------------------------
+    int l = V_skin.rows();
     int n = V.rows();
-    int M = T.rows();
-    int L = V_skin.rows();
+    N.resize(l, n);
 
-    N.resize(L, n);
-    N.setZero();
-    std::vector<Eigen::Triplet<double>> tripletList;
+    typedef Eigen::Triplet<double> Trip;
+    std::vector<Trip> tripleList;
+    tripleList.reserve(l * n);
 
-    for (int l = 0; l < L; l++) {
-        const Eigen::Vector3d skin_x = V_skin.row(l);
+    for (int i = 0; i < l; i++)
+    {
+        Eigen::Vector3d x = V_skin.row(i);
+        bool mapped = false;
+        double min_dist = std::numeric_limits<int>::max();
+        Eigen::Vector3d min_v;
+        Eigen::Vector4d min_phi;
+        Eigen::Vector4i min_element;
 
-        for (int m = 0; m < M; m++) {
+        // search all the vertices on tet that has the min_dist with current mesh vertex
+        for (int j = 0; j < n; j++)
+        {
             Eigen::Vector4d phi;
-            const Eigen::RowVectorXi element = T.row(m);
-
-            phi_linear_tetrahedron(phi, V, element, skin_x);
-            // determine if point x on skin is inside current tetrahedron
-            if (phi(0) >= 0 && phi(0) <= 1 &&
-                phi(1) >= 0 && phi(1) <= 1 &&
-                phi(2) >= 0 && phi(2) <= 1 &&
-                phi(3) >= 0 && phi(3) <= 1 &&
-                phi.sum() <= 1.05) {
-
-                for (int i = 0; i < phi.size(); i++) {
-                    tripletList.push_back({ l, element(i), phi(i) });
+            Eigen::RowVector4i element = T.row(j);
+            phi_linear_tetrahedron(phi, V, element, x);
+            for (int v = 0; v < 4; v++)
+            {
+                Eigen::Vector3d X_v;
+                X_v = V.row(element(v));
+                double dist = (X_v - x).norm();
+                if (dist < min_dist)
+                {
+                    min_dist = dist;
+                    min_phi = phi;
+                    min_v = X_v;
+                    min_element = element;
                 }
 
             }
         }
+        tripleList.push_back(Trip(i, min_element[0], min_phi[0]));
+        tripleList.push_back(Trip(i, min_element[1], min_phi[1]));
+        tripleList.push_back(Trip(i, min_element[2], min_phi[2]));
+        tripleList.push_back(Trip(i, min_element[3], min_phi[3]));
     }
-
-    N.setFromTriplets(tripletList.begin(), tripletList.end());
+    N.setFromTriplets(tripleList.begin(), tripleList.end());
 }

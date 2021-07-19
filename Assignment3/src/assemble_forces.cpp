@@ -39,40 +39,38 @@ void assemble_forces(Eigen::VectorXd &f, Eigen::Ref<const Eigen::VectorXd> q, Ei
     
     
     
-    f = Eigen::VectorXd::Zero(q.rows());
+    int r = q.rows();
+    f.resize(r);
+    f.setZero();
 
-    // iterate through each tetrahedron
-    for (int i=0; i<T.rows(); i++) {
+    for (int i = 0; i < T.rows(); i++)
+    {
+        Eigen::Vector3i index_q0, index_q1, index_q2, index_q3; // store the index to the vector q to reach [q0_x, q0_y, q0_z]
+        index_q0 << T(i, 0) * 3, T(i, 0) * 3 + 1, T(i, 0) * 3 + 2;
+        index_q1 << T(i, 1) * 3, T(i, 1) * 3 + 1, T(i, 1) * 3 + 2;
+        index_q2 << T(i, 2) * 3, T(i, 2) * 3 + 1, T(i, 2) * 3 + 2;
+        index_q3 << T(i, 3) * 3, T(i, 3) * 3 + 1, T(i, 3) * 3 + 2;
 
-        Eigen::Vector12d dV;
-        Eigen::RowVectorXi element = T.row(i);
-        double volume_i = v0(i);
-        dV_linear_tetrahedron_dq(dV, q, V, element, volume_i, C, D);
 
-        int tet_idx1 = element(0);
-        int tet_idx2 = element(1);
-        int tet_idx3 = element(2);
-        int tet_idx4 = element(3);
+        Eigen::Vector12d dV_i;
+        dV_linear_tetrahedron_dq(dV_i, q, V, T.row(i), v0(i), C, D);
 
-        // directly update relevant elements from f,
-        // bunny moves faster and more smoothly
-        f[3*tet_idx1] -= dV[0];
-        f[3*tet_idx1+1] -= dV[1];
-        f[3*tet_idx1+2] -= dV[2];
+        f(index_q0(0)) -= dV_i(0);
+        f(index_q0(1)) -= dV_i(1);
+        f(index_q0(2)) -= dV_i(2);
 
-        f[3*tet_idx2] -= dV[3];
-        f[3*tet_idx2+1] -= dV[4];
-        f[3*tet_idx2+2] -= dV[5];
+        f(index_q1(0)) -= dV_i(3);
+        f(index_q1(1)) -= dV_i(4);
+        f(index_q1(2)) -= dV_i(5);
 
-        f[3*tet_idx3] -= dV[6];
-        f[3*tet_idx3+1] -= dV[7];
-        f[3*tet_idx3+2] -= dV[8];
+        f(index_q2(0)) -= dV_i(6);
+        f(index_q2(1)) -= dV_i(7);
+        f(index_q2(2)) -= dV_i(8);
 
-        f[3*tet_idx4] -= dV[9];
-        f[3*tet_idx4+1] -= dV[10];
-        f[3*tet_idx4+2] -= dV[11];
-
-    }    
+        f(index_q3(0)) -= dV_i(9);
+        f(index_q3(1)) -= dV_i(10);
+        f(index_q3(2)) -= dV_i(11);
+    }
     
 
     };

@@ -13,44 +13,47 @@
 template<typename Objective, typename Jacobian, typename Hessian>
 double newtons_method(Eigen::VectorXd &x0, Objective &f, Jacobian &g, Hessian &H, unsigned int maxSteps, Eigen::VectorXd &tmp_g, Eigen::SparseMatrixd &tmp_H) {
    
-    unsigned int itr_cnt = 0;
-    Eigen::VectorXd qdot_i = x0;
-    g(tmp_g, qdot_i);
-    double energy_grad_norm = tmp_g.norm();
-    double tol = 1e-2;
+    double p = 0.5; // scaling factor
+    double c = 1e-8; // ensure sufficient decrease
+    //solve the linear system H*d = -g to the d
+    // A = H
+    // b = -g
+    for (int i = 0; i < maxSteps; i++)
+    {
+        g(tmp_g, x0);
+        H(tmp_H, x0);
+        if (tmp_g.norm() < c)
+        {
+            break;
+        }
+        //Eigen::ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower|Eigen::Upper> cgSolver;
+        //cgSolver.compute(tmp_H);
+        //Eigen::VectorXd d;
+        //d = cgSolver.solve(-tmp_g);
 
-    while (energy_grad_norm >= 0.0 && itr_cnt < maxSteps) {
-        g(tmp_g, qdot_i);
-        H(tmp_H, qdot_i);
-
-        // GiCGSTAB occasionally causes seg fault error.
-        // Eigen::BiCGSTAB<Eigen::SparseMatrix<double>> solver;
         Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
         solver.compute(tmp_H);
-        Eigen::VectorXd b = -1.0 * tmp_g;
+        Eigen::VectorXd d;
+        d = solver.solve(-tmp_g);
 
-        Eigen::VectorXd d = solver.solve(b);
+        //std::cout << "d\n" << d <<  std::endl;
+        //std::cout << "x0\n" << x0 <<  std::endl;
+
         // line search
-        double alpha = 1.0;
-        double p = 0.5;
-        double c = 1e-8;
-        double cur_energy = f(qdot_i + alpha * d);
-        double threshold = f(qdot_i) + c * (d.transpose() * tmp_g)(0);
-
-        // perform line search
-        while (cur_energy > threshold && alpha >= 0.001) {
+        double alpha = 1.0; // initial step length
+        while (true)
+        {
+            double threshold_cost = f(x0) + c * d.transpose() * tmp_g;
+            double new_cost = f(x0 + (alpha * d));
+            if (new_cost <= threshold_cost || alpha < c)
+            {
+                //std::cout << "alpha\n" << alpha <<  std::endl;
+                break;
+            }
             alpha = p * alpha;
-            cur_energy = f(qdot_i + alpha * d);
         }
-
-        qdot_i = qdot_i + alpha * d;
-        g(tmp_g, qdot_i);
-
-        energy_grad_norm = tmp_g.norm();
-        itr_cnt = itr_cnt + 1;
+        x0 = x0 + alpha * d;
     }
-
-    x0 = qdot_i;
 
     return 0.0;
 }
