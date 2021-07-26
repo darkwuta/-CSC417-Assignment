@@ -18,7 +18,7 @@ void assemble_stiffness(Eigen::SparseMatrixd &K, Eigen::Ref<const Eigen::VectorX
         d2V_linear_tetrahedron_dq2(H_i, q, V, T.row(i), v0(i), C, D);
 
 
-        Eigen::Matrix3d H_i00 = H_i.block(0, 0, 3, 3);
+        Eigen::Matrix3d H_i00 = H_i.block(0, 0, 3, 3);//3*3 matrix
         Eigen::Matrix3d H_i01 = H_i.block(0, 3, 3, 3);
         Eigen::Matrix3d H_i02 = H_i.block(0, 6, 3, 3);
         Eigen::Matrix3d H_i03 = H_i.block(0, 9, 3, 3);

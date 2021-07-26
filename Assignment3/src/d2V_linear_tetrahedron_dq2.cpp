@@ -141,7 +141,7 @@ void d2V_linear_tetrahedron_dq2(Eigen::Matrix1212d &H, Eigen::Ref<const Eigen::V
        Eigen::Map<Eigen::Matrix3d> F(F_flatten.data(), 3, 3);
        F.transposeInPlace();
 
-       // dF2
+       // dF2 pptµÚËÄÕÂ83Ò³
        Eigen::Matrix99d dF2;
        d2psi_neo_hookean_dF2(dF2, F, C, D);
 
