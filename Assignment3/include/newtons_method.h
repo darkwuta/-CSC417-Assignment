@@ -22,7 +22,7 @@ double newtons_method(Eigen::VectorXd &x0, Objective &f, Jacobian &g, Hessian &H
     {
         g(tmp_g, x0);
         H(tmp_H, x0);
-        if (tmp_g.norm() < c)
+        if (tmp_g.norm() < c)//梯度几乎为零，说明找到局部极小值
         {
             break;
         }
