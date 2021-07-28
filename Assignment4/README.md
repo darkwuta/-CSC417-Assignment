@@ -75,11 +75,11 @@ If you are using Mac or Linux, then issue:
 Compiling the code in the above manner will yield working, but very slow executables. To run the code at full speed, you should compile it in release mode. Starting in the **build directory**, do the following:
 
     cmake .. -DCMAKE_BUILD_TYPE=Release
-    
+
 Followed by:
 
     make 
-  
+
 Your code should now run significantly (sometimes as much as ten times) faster. 
 
 If you are using Windows, then running `cmake ..` should have created a Visual Studio solution file
@@ -282,5 +282,4 @@ Project out components of the per-vertex velocities which are in the **positive*
 ###  pick_nearest_vertices.cpp
 
 **Use your code from the last assignment**
-
 
