@@ -22,7 +22,7 @@ void build_skinning_matrix(Eigen::SparseMatrixd &N, Eigen::Ref<const Eigen::Matr
         double min_dist = std::numeric_limits<int>::max();
         Eigen::Vector3d min_v;
         Eigen::Vector4d min_phi;
-        Eigen::Vector4i min_element;
+        Eigen::Vector4i min_element; 
 
         // search all the vertices on tet that has the min_dist with current mesh vertex
         for (int j = 0; j < n; j++)

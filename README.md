@@ -13,3 +13,8 @@
 
 ![mass-spring-system-3D](image/mass-spring-system-3D.gif)
 
+### Assingment 3
+
+**Finite Element Method**
+
+![Finite Element Method](image/Finite Element Method.gif)
