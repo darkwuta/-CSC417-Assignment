@@ -17,4 +17,5 @@
 
 **Finite Element Method**
 
-![Finite Element Method](image/Finite Element Method.gif)
+![Finite-Element-Method](image/Finite-Element-Method.gif)
+

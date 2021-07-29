@@ -26,13 +26,12 @@ inline void linearly_implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, d
     stiffness(tmp_stiffness, q, qdot);
 
     // solve qhat_Tplus1
-    Eigen::BiCGSTAB<Eigen::SparseMatrix<double>> solver;
+    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> solver;
     Eigen::SparseMatrix<double> A = mass - dt * dt * tmp_stiffness;
     Eigen::VectorXd b = mass * qdot + dt * tmp_force;
 
     solver.compute(A);
-    Eigen::VectorXd qhat_dotTplus1 = solver.solve(b);
+    qdot = solver.solve(b);
 
-    qdot = qhat_dotTplus1;
     q = q + dt * qhat_dotTplus1;
 }

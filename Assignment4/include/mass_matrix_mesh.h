@@ -7,7 +7,7 @@
 //  V - the nx3 matrix of undeformed vertex positions
 //  F - the mx3 matrix of triangle-vertex indices
 //  density - the density of the cloth material
-//  areas - the mx1 vector of undeformed triangle areas
+//  areas - the mx1 vector of undeformed triangle areas Ãæ»ý
 //Output:
 //  M - sparse mass matrix for the entire mesh
  void mass_matrix_mesh(Eigen::SparseMatrixd &M, Eigen::Ref<const Eigen::VectorXd> q, 
