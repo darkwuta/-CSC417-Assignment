@@ -41,7 +41,7 @@ void dphi_linear_tetrahedron_dX(Eigen::Matrix43d &dphi, Eigen::Ref<const Eigen::
 
 
     dphi.setZero();
-    dphi.block(0, 0, 1, 3) = T_inv.colwise().sum();
+    dphi.block(0, 0, 1, 3) = -T_inv.colwise().sum();
     dphi.block(1, 0, 3, 3) = T_inv;
 
 

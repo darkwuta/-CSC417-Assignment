@@ -16,6 +16,4 @@ void dphi_cloth_triangle_dX(Eigen::Matrix3d &dphi, Eigen::Ref<const Eigen::Matri
 
     dphi.block(0, 0, 1, 3) = Eigen::Vector2d::Ones().transpose() * (T.transpose() * T).inverse() * T.transpose();
     dphi.block(1, 0, 2, 3) = (T.transpose() * T).inverse() * T.transpose();
-
-
 }
