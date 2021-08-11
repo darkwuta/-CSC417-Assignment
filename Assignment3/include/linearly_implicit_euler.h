@@ -30,6 +30,7 @@ inline void linearly_implicit_euler(Eigen::VectorXd &q, Eigen::VectorXd &qdot, d
     Eigen::SparseMatrix<double> A = mass - dt * dt * tmp_stiffness;
     Eigen::VectorXd b = mass * qdot + dt * tmp_force;
 
+    // A*adot = b
     solver.compute(A);
     qdot = solver.solve(b);
 
