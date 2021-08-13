@@ -180,8 +180,8 @@ bool key_down_callback(igl::opengl::glfw::Viewer &viewer, unsigned char key, int
 inline void assignment_setup(int argc, char **argv, Eigen::VectorXd &q, Eigen::VectorXd &qdot) {
 
     //load geometric data 
-    igl::readOBJ("../data/square_cloth.obj", V, F);
-    igl::readOBJ("../data/sphere.obj", V_sphere, F_sphere);
+    igl::readOBJ("D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment4/data/square_cloth.obj", V, F);
+    igl::readOBJ("D:/github/CSC417-physics-based-animation-master/CSC417-Assignment/-CSC417-Assignment/Assignment4/data/sphere.obj", V_sphere, F_sphere);
 
     //setup simulation 
     init_state(q,qdot,V);
